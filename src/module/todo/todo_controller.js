@@ -18,6 +18,9 @@ const createTodoController = async (req, res) => {
     try {
         // Extract data from the request body
         const { title, description } = req.body;
+        if (!title || !description) {
+            return res.status(400).json({ error: 'Title and description are required fields' });
+        }
         // Create a new document using the Mongoose model
         const newData = new TodoMolel({
             title,
@@ -29,8 +32,13 @@ const createTodoController = async (req, res) => {
     } catch (e) {
         console.log(e);
         // Ensure that the response is only sent once
+        // Mongoose validation error
+        if (error.name === 'ValidationError') {
+            const errors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ error: errors.join(', ') });
+        }
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Internal server error' });
+            return res.status(500).json({ error: `${error}` });
         }
     }
 }
@@ -39,7 +47,9 @@ const createTodoController = async (req, res) => {
 const updateTodoController = async (req, res) => {
     try {
         const { id, title, description } = req.body;
-
+        if (!id) {
+            return res.status(400).json({ error: 'Id is required fields' });
+        }
         // Check if the ID is valid
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ error: 'Invalid ID' });
@@ -50,7 +60,6 @@ const updateTodoController = async (req, res) => {
         if (!title && !description) {
             return res.status(400).json({ error: 'No data provided for update' });
         }
-
         // Find the document by ID and update it
         const updatedData = await TodoMolel.findByIdAndUpdate(id, { title, description }, { new: true });
 
@@ -74,6 +83,9 @@ const deleteTodoController = async (req, res) => {
     try {
         // Extract the ID from the request parameters
         const { id } = req.body;
+        if (!id) {
+            return res.status(400).json({ error: 'Id is required fields' });
+        }
         // Check if the ID is valid
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ error: 'Invalid ID' });
