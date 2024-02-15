@@ -36,21 +36,13 @@ app.use('/api/v1/todo', todoRoutes)
 app.use((req, res, next) => {
     next(createError(404, "route not found"));
 });
-
 // server Error handeling
 app.use((err, req, res, next) => {
-    // return res.status(err.status || 500).json({
-    //   success: false,
-    //   menubar: err.message,
-    // });
-
     return errorResposnse(res, {
         statusCode: err.status,
         message: err.message,
     });
 });
-
-
 
 module.exports = app;
 

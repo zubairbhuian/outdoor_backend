@@ -14,7 +14,7 @@ const getTodoController = async (req, res) => {
 }
 
 // ! create todo
-const createTodoController = async (req, res) => {
+const createTodoController = async (req, res, next) => {
     try {
         // Extract data from the request body
         const { title, description } = req.body;
@@ -30,16 +30,7 @@ const createTodoController = async (req, res) => {
         await newData.save();
         res.status(201).json({ message: 'Data saved successfully!', data: newData });
     } catch (e) {
-        console.log(e);
-        // Ensure that the response is only sent once
-        // Mongoose validation error
-        if (error.name === 'ValidationError') {
-            const errors = Object.values(error.errors).map(err => err.message);
-            return res.status(400).json({ error: errors.join(', ') });
-        }
-        if (!res.headersSent) {
-            return res.status(500).json({ error: `${error}` });
-        }
+        next(e);
     }
 }
 
